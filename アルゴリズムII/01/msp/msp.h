@@ -1,1 +1,1 @@
-int max_subarray(unsigned from, unsigned num);
+int max_subarray (unsigned from, unsigned num);
