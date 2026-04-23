@@ -5,7 +5,6 @@
 extern unsigned dist[NMAX];
 
 void change_heap(HEAP *heap, unsigned pos) {
-	/* make it */
 	if (pos == 0 || pos >= heap->num) {
 		return;
 	}
@@ -21,7 +20,6 @@ void change_heap(HEAP *heap, unsigned pos) {
 }
 
 static void heapify(HEAP *heap, unsigned pos) {
-	/* make it */
 	unsigned left = pos * 2 + 1;
 	unsigned right = pos * 2 + 2;
 	unsigned smallest = pos;
