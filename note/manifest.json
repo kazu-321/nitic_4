@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "appName": "godnote",
+  "appVersion": "0.1.0",
+  "subjectOrder": [
+    "f0a490d0-1242-482f-880f-5cb51a937f0d",
+    "86b29220-477a-4c2b-b9af-bc9921d63d26"
+  ],
+  "subjects": [
+    {
+      "id": "f0a490d0-1242-482f-880f-5cb51a937f0d",
+      "name": "情報ネットワークII",
+      "path": "subjects/f0a490d0-1242-482f-880f-5cb51a937f0d.json"
+    },
+    {
+      "id": "86b29220-477a-4c2b-b9af-bc9921d63d26",
+      "name": "テスト用",
+      "path": "subjects/86b29220-477a-4c2b-b9af-bc9921d63d26.json"
+    }
+  ]
+}
