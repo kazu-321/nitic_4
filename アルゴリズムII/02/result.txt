@@ -1,0 +1,69 @@
+
+== insert ==
+
+insert 7
+7(B)
+
+insert 4
+7(B)
+    4(R)
+
+insert 3
+    7(R)
+4(B)
+    3(R)
+
+insert 1
+    7(B)
+4(B)
+    3(B)
+        1(R)
+
+insert 5
+    7(B)
+        5(R)
+4(B)
+    3(B)
+        1(R)
+
+insert 2
+    7(B)
+        5(R)
+4(B)
+        3(R)
+    2(B)
+        1(R)
+
+== search ==
+search 3: found (3,R)
+search 6: not found
+
+== delete ==
+
+delete 2
+    7(B)
+        5(R)
+4(B)
+    3(B)
+        1(R)
+
+delete 4
+    7(B)
+5(B)
+    3(B)
+        1(R)
+
+delete 7
+    5(B)
+3(B)
+    1(B)
+
+delete 3
+5(B)
+    1(R)
+
+delete 5
+1(B)
+
+delete 1
+(empty)
