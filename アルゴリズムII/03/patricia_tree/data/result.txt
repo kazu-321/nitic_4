@@ -1,119 +1,101 @@
 Inserting: man
 
-Patricia Tree:
 ROOT
-  |
-  |
+  ┃
  man
-[end]
+  ┃
+  #
 --------------------------------------------------
 Inserting: mane
 
-Patricia Tree:
 ROOT
-  |
-  |
+  ┃
  man
-[end]
-  |
-  e
-[end]
+┏━┻┓
+e  #
+┃
+#
 --------------------------------------------------
 Inserting: dry
 
-Patricia Tree:
-     ROOT
-      |
-  /        \
- dry      man
-[end]    [end]
-           |
-           e
-         [end]
+  ROOT
+ ┏━━┻━━┓
+dry   man
+ ┃   ┏━┻┓
+ #   e  #
+     ┃
+     #
 --------------------------------------------------
 Inserting: dried
 
-Patricia Tree:
-         ROOT
-           |
-       /            \
-      dr           man
-      |           [end]
-  /        \        |
- ied       y        e
-[end]    [end]    [end]
+     ROOT
+   ┏━━━┻━━┓
+  dr     man
+ ┏━┻━┓  ┏━┻┓
+ied  y  e  #
+ ┃   ┃  ┃
+ #   #  #
 --------------------------------------------------
 Inserting: mat
 
-Patricia Tree:
-              ROOT
-               |
-       /                 \
-      dr                ma
-      |                 |
-  /        \        /        \
- ied       y        n        t
-[end]    [end]    [end]    [end]
-                    |
-                    e
-                  [end]
+      ROOT
+   ┏━━━━┻━━━┓
+  dr       ma
+ ┏━┻━┓    ┏━┻━┓
+ied  y    n   t
+ ┃   ┃  ┏━┻┓  ┃
+ #   #  e  #  #
+        ┃
+        #
 --------------------------------------------------
 
 Search Results:
 mane: 1 (startsWith: 1)
 many: 0 (startsWith: 0)
 drie: 0 (startsWith: 1)
+--------------------------------------------------
 Deleting: dried
 
-Patricia Tree:
-         ROOT
-           |
-  /             \
- dry           ma
-[end]          |
-           /        \
-           n        t
-         [end]    [end]
-           |
-           e
-         [end]
+   ROOT
+ ┏━━━┻━━━┓
+dry     ma
+ ┃     ┏━┻━┓
+ #     n   t
+     ┏━┻┓  ┃
+     e  #  #
+     ┃
+     #
 --------------------------------------------------
 Deleting: mat
 
-Patricia Tree:
-     ROOT
-      |
-  /        \
- dry      man
-[end]    [end]
-           |
-           e
-         [end]
+  ROOT
+ ┏━━┻━━┓
+dry   man
+ ┃   ┏━┻┓
+ #   e  #
+     ┃
+     #
 --------------------------------------------------
 Deleting: dry
 
-Patricia Tree:
 ROOT
-  |
-  |
+  ┃
  man
-[end]
-  |
-  e
-[end]
+┏━┻┓
+e  #
+┃
+#
 --------------------------------------------------
 Deleting: man
 
-Patricia Tree:
 ROOT
-  |
-  |
+  ┃
 mane
-[end]
+  ┃
+  #
 --------------------------------------------------
 Deleting: mane
 
-Patricia Tree:
-ROOT
- |  
+  RO
+  ┃ 
 --------------------------------------------------

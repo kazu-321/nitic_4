@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <codecvt>
+#include <locale>
 #include <iostream>
 #include <random>
 #include <stdexcept>
@@ -170,29 +172,46 @@ class TwoThreeTree {
     }
 
 
+
+
+
+
+
+
     struct RenderBox {
-        vector<string> lines;
-        size_t         width = 0;
+        vector<u32string> lines;
+        size_t width = 0;
+        size_t root_pos = 0;
     };
 
-    static string repeat_char (char c, size_t n) {
-        return string (n, c);
+    static u32string repeat_char (char32_t c, size_t n) {
+        return u32string (n, c);
     }
 
-    RenderBox render_box (Node* node) const {
-        RenderBox box;
-        if (!node) return box;
+    static string to_utf8 (const u32string& s) {
+        wstring_convert<codecvt_utf8<char32_t>, char32_t> conv;
+        return conv.to_bytes (s);
+    }
 
+    static u32string make_label (const Node* node) {
         string label = "[";
         for (size_t i = 0; i < node->keys.size (); ++i) {
             label += to_string (node->keys[i]);
             if (i + 1 < node->keys.size ()) label += ", ";
         }
         label += "]";
+        return u32string (label.begin (), label.end ());
+    }
 
+    RenderBox render_box (Node* node) const {
+        RenderBox box;
+        if (!node) return box;
+
+        u32string label = make_label (node);
         if (node->children.empty ()) {
             box.lines.push_back (label);
             box.width = label.size ();
+            box.root_pos = label.size () / 2;
             return box;
         }
 
@@ -200,61 +219,116 @@ class TwoThreeTree {
         child_boxes.reserve (node->children.size ());
         for (Node* child : node->children) child_boxes.push_back (render_box (child));
 
-        size_t child_gap = 3;
-        size_t children_width = 0;
-        size_t child_height = 0;
-        for (size_t i = 0; i < child_boxes.size (); ++i) {
-            children_width += child_boxes[i].width;
-            if (i + 1 < child_boxes.size ()) children_width += child_gap;
-            child_height = max (child_height, child_boxes[i].lines.size ());
-        }
+        const size_t gap = child_boxes.size () == 2 ? 1 : 2;
+        const size_t label_pad = 3;
+        size_t label_width = label.size () + label_pad * 2;
+        size_t label_center = label_width / 2;
 
-        box.width = max (label.size (), children_width);
-        size_t label_left = (box.width - label.size ()) / 2;
-        box.lines.push_back (repeat_char (' ', label_left) + label + repeat_char (' ', box.width - label_left - label.size ()));
-
-        string connector (box.width, ' ');
-        size_t start_col = (box.width - children_width) / 2;
-        size_t cursor = start_col;
-        if (child_boxes.size () == 2) {
-            size_t left_pos  = cursor + child_boxes[0].width / 2;
-            cursor += child_boxes[0].width + child_gap;
-            size_t right_pos = cursor + child_boxes[1].width / 2;
-            if (left_pos < connector.size ()) connector[left_pos] = '/';
-            if (right_pos < connector.size ()) connector[right_pos] = '\\';
+        vector<long> rel_lefts (child_boxes.size (), 0);
+        if (child_boxes.size () == 1) {
+            rel_lefts[0] = 0;
+        } else if (child_boxes.size () == 2) {
+            rel_lefts[0] = 0;
+            rel_lefts[1] = static_cast<long> (child_boxes[0].width) + static_cast<long> (gap);
         } else if (child_boxes.size () == 3) {
-            size_t left_pos   = cursor + child_boxes[0].width / 2;
-            cursor += child_boxes[0].width + child_gap;
-            size_t middle_pos = cursor + child_boxes[1].width / 2;
-            cursor += child_boxes[1].width + child_gap;
-            size_t right_pos  = cursor + child_boxes[2].width / 2;
-            if (left_pos < connector.size ()) connector[left_pos] = '/';
-            if (middle_pos < connector.size ()) connector[middle_pos] = '|';
-            if (right_pos < connector.size ()) connector[right_pos] = '\\';
-        }
-        box.lines.push_back (connector);
-
-        vector<string> merged (child_height, string (box.width, ' '));
-        cursor = start_col;
-        for (size_t child_index = 0; child_index < child_boxes.size (); ++child_index) {
-            const RenderBox& child = child_boxes[child_index];
-            size_t child_left = cursor;
-            for (size_t line = 0; line < child.lines.size (); ++line) {
-                string padded = child.lines[line] + repeat_char (' ', child.width - child.lines[line].size ());
-                merged[line].replace (child_left, child.width, padded);
+            rel_lefts[1] = 0;
+            rel_lefts[0] = -static_cast<long> (child_boxes[0].width + gap);
+            rel_lefts[2] = static_cast<long> (child_boxes[1].width + gap);
+        } else {
+            rel_lefts[0] = 0;
+            for (size_t i = 1; i < child_boxes.size (); ++i) {
+                rel_lefts[i] = rel_lefts[i - 1] + static_cast<long> (child_boxes[i - 1].width) + static_cast<long> (gap);
             }
-            cursor += child.width + child_gap;
         }
 
-        for (const string& line : merged) box.lines.push_back (line);
+        vector<long> child_centers (child_boxes.size (), 0);
+        for (size_t i = 0; i < child_boxes.size (); ++i) {
+            child_centers[i] = rel_lefts[i] + static_cast<long> (child_boxes[i].root_pos);
+        }
+
+        long root_center_rel = 0;
+        if (child_boxes.size () == 1) {
+            root_center_rel = child_centers[0];
+        } else if (child_boxes.size () == 2) {
+            root_center_rel = (child_centers[0] + child_centers[1]) / 2;
+        } else if (child_boxes.size () == 3) {
+            root_center_rel = child_centers[1];
+        } else {
+            root_center_rel = child_centers[child_centers.size () / 2];
+        }
+
+        long label_box_left_rel = root_center_rel - static_cast<long> (label_width / 2);
+        long label_box_right_rel = label_box_left_rel + static_cast<long> (label_width - 1);
+        long label_x_rel = label_box_left_rel + static_cast<long> (label_pad);
+        long min_left = min (label_box_left_rel, root_center_rel);
+        long max_right = max (label_box_right_rel + 1, root_center_rel + 1);
+        for (size_t i = 0; i < child_boxes.size (); ++i) {
+            min_left = min (min_left, rel_lefts[i]);
+            max_right = max (max_right, rel_lefts[i] + static_cast<long> (child_boxes[i].width));
+        }
+
+        long shift = -min_left;
+        size_t width = static_cast<size_t> (max_right - min_left);
+        size_t label_x = static_cast<size_t> (label_x_rel + shift);
+        size_t root_x = static_cast<size_t> (root_center_rel + shift);
+
+        vector<size_t> child_lefts (child_boxes.size (), 0);
+        for (size_t i = 0; i < child_boxes.size (); ++i) {
+            child_lefts[i] = static_cast<size_t> (rel_lefts[i] + shift);
+        }
+
+        size_t left_cap = child_lefts.front () + child_boxes.front ().root_pos;
+        size_t right_cap = child_lefts.back () + child_boxes.back ().root_pos;
+        if (left_cap > right_cap) swap (left_cap, right_cap);
+        if (label_x <= left_cap) label_x = left_cap + 1;
+        size_t label_end = label_x + label.size ();
+        if (label_end > right_cap) {
+            if (right_cap > label.size ()) label_x = right_cap - label.size ();
+            else label_x = left_cap + 1;
+            label_end = label_x + label.size ();
+        }
+        if (label_end > width) width = label_end;
+        if (right_cap >= width) width = right_cap + 1;
+        box.width = width;
+        box.root_pos = root_x;
+
+        u32string top_row (width, U' ');
+        for (size_t x = left_cap + 1; x < right_cap; ++x) top_row[x] = U'━';
+        for (size_t i = 0; i < label.size (); ++i) top_row[label_x + i] = label[i];
+        top_row[left_cap] = U'┏';
+        top_row[right_cap] = U'┓';
+        box.lines.push_back (top_row);
+
+        u32string connect_row (width, U' ');
+        if (child_boxes.size () == 3) {
+            connect_row[root_x] = U'┃';
+        }
+        for (size_t i = 0; i < child_boxes.size (); ++i) {
+            size_t center = child_lefts[i] + child_boxes[i].root_pos;
+            if (center < connect_row.size ()) connect_row[center] = U'┃';
+        }
+        box.lines.push_back (connect_row);
+
+        size_t child_height = 0;
+        for (const RenderBox& child : child_boxes) child_height = max (child_height, child.lines.size ());
+        vector<u32string> merged (child_height, u32string (width, U' '));
+        for (size_t i = 0; i < child_boxes.size (); ++i) {
+            const RenderBox& child = child_boxes[i];
+            for (size_t line = 0; line < child.lines.size (); ++line) {
+                u32string padded = child.lines[line] + repeat_char (U' ', child.width - child.lines[line].size ());
+                merged[line].replace (child_lefts[i], child.width, padded);
+            }
+        }
+        for (const u32string& line : merged) box.lines.push_back (line);
+
         return box;
     }
 
     void print_rendered (const RenderBox& box) const {
-        for (const string& line : box.lines) {
-            string trimmed = line;
-            while (!trimmed.empty () && trimmed.back () == ' ') trimmed.pop_back ();
-            cout << trimmed << endl;
+        for (const u32string& line : box.lines) {
+            u32string trimmed = line;
+            while (!trimmed.empty () && trimmed.back () == U' ') trimmed.pop_back ();
+            cout << to_utf8 (trimmed) << endl;
         }
     }
 
@@ -274,12 +348,69 @@ class TwoThreeTree {
         return search_node (root, key);
     }
 
+    void print_search_trace (int key) const {
+        cout << "Search " << key << " trace" << endl;
+        if (!root) {
+            cout << "└─[] -> not found" << endl;
+            return;
+        }
+        print_search_trace_node (root, key, 0);
+    }
+
     void print () const {
         if (!root) {
             cout << "[]" << endl;
             return;
         }
         print_rendered (render_box (root));
+    }
+
+    void print_search_trace_node (Node* node, int key, int depth) const {
+        string indent (static_cast<size_t> (depth) * 2, ' ');
+        cout << indent << "└─" << to_utf8 (make_label (node));
+
+        bool found = false;
+        for (int k : node->keys) {
+            if (key == k) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            cout << " -> found" << endl;
+            return;
+        }
+
+        if (node->is_leaf ()) {
+            cout << " -> not found" << endl;
+            return;
+        }
+
+        size_t next = 0;
+        string move;
+        if (node->keys.size () == 1) {
+            if (key < node->keys[0]) {
+                next = 0;
+                move = "left";
+            } else {
+                next = 1;
+                move = "right";
+            }
+        } else {
+            if (key < node->keys[0]) {
+                next = 0;
+                move = "left";
+            } else if (key < node->keys[1]) {
+                next = 1;
+                move = "middle";
+            } else {
+                next = 2;
+                move = "right";
+            }
+        }
+
+        cout << " -> go " << move << endl;
+        print_search_trace_node (node->children[next], key, depth + 1);
     }
 
     void remove (int key) {
@@ -310,8 +441,12 @@ int main () {
         cout << "--------------------------------------------------" << endl;
     }
 
+    tree.print_search_trace (9);
     cout << "Search 9: " << (tree.search (9) ? "Found" : "Not found") << endl;
+    cout << "--------------------------------------------------" << endl;
+    tree.print_search_trace (18);
     cout << "Search 18: " << (tree.search (18) ? "Found" : "Not found") << endl;
+    cout << "--------------------------------------------------" << endl;
 
     vector<int> erase_order = odds;
     do {
