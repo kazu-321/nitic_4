@@ -1,0 +1,119 @@
+Inserting: man
+
+Patricia Tree:
+ROOT
+  |
+  |
+ man
+[end]
+--------------------------------------------------
+Inserting: mane
+
+Patricia Tree:
+ROOT
+  |
+  |
+ man
+[end]
+  |
+  e
+[end]
+--------------------------------------------------
+Inserting: dry
+
+Patricia Tree:
+     ROOT
+      |
+  /        \
+ dry      man
+[end]    [end]
+           |
+           e
+         [end]
+--------------------------------------------------
+Inserting: dried
+
+Patricia Tree:
+         ROOT
+           |
+       /            \
+      dr           man
+      |           [end]
+  /        \        |
+ ied       y        e
+[end]    [end]    [end]
+--------------------------------------------------
+Inserting: mat
+
+Patricia Tree:
+              ROOT
+               |
+       /                 \
+      dr                ma
+      |                 |
+  /        \        /        \
+ ied       y        n        t
+[end]    [end]    [end]    [end]
+                    |
+                    e
+                  [end]
+--------------------------------------------------
+
+Search Results:
+mane: 1 (startsWith: 1)
+many: 0 (startsWith: 0)
+drie: 0 (startsWith: 1)
+Deleting: dried
+
+Patricia Tree:
+         ROOT
+           |
+  /             \
+ dry           ma
+[end]          |
+           /        \
+           n        t
+         [end]    [end]
+           |
+           e
+         [end]
+--------------------------------------------------
+Deleting: mat
+
+Patricia Tree:
+     ROOT
+      |
+  /        \
+ dry      man
+[end]    [end]
+           |
+           e
+         [end]
+--------------------------------------------------
+Deleting: dry
+
+Patricia Tree:
+ROOT
+  |
+  |
+ man
+[end]
+  |
+  e
+[end]
+--------------------------------------------------
+Deleting: man
+
+Patricia Tree:
+ROOT
+  |
+  |
+mane
+[end]
+--------------------------------------------------
+Deleting: mane
+
+Patricia Tree:
+ROOT
+ |  
+--------------------------------------------------
